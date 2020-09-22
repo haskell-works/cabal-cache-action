@@ -1,0 +1,37 @@
+name: Haskell cabal-cache
+description: Cache cabal store packages in S3
+inputs:
+  args:
+    description: 'Arguments to cabal cache'
+    required: true
+branding:
+  icon: archive
+  color: green
+runs:
+  using: "composite"
+  steps: 
+    - env:
+        CI_TEMP: ${{runner.temp}}
+      run: |
+        export CI_TEMP="$(echo "/$CI_TEMP" | sed 's/\\/\//g' | sed 's/://')"
+        export LOCAL_BIN="$HOME/.local/bin"
+        mkdir -p "$LOCAL_BIN"
+        export PATH="$LOCAL_BIN:$PATH"
+        case "${{runner.os}}" in
+          Linux)    CI_OS=linux   ;;
+          Windows)  CI_OS=nt      ;;
+          macOS)    CI_OS=osx     ;;
+          *)        echo "Unsupported OS: ${{ runner.os }}"; exit 1;;
+        esac
+
+        echo "Downloading from https://dl.haskellworks.io/binaries/cabal-cache/cabal-cache_x86_64_${CI_OS}.tar.gz"
+        curl -L "https://dl.haskellworks.io/binaries/cabal-cache/cabal-cache_x86_64_${CI_OS}.tar.gz" \
+          -o "$CI_TEMP/cabal-cache.tar.gz"
+        tar zxvf "$CI_TEMP/cabal-cache.tar.gz" -C "$LOCAL_BIN"
+        ls -al "$LOCAL_BIN/cabal-cache"
+        echo "::add-path::$LOCAL_BIN"
+      shell: bash
+    - run: |
+        echo cabal-cache ${{ inputs.args }}
+        cabal-cache ${{ inputs.args }}
+      shell: bash
