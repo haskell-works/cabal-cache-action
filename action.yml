@@ -29,7 +29,7 @@ runs:
           -o "$CI_TEMP/cabal-cache.tar.gz"
         tar zxvf "$CI_TEMP/cabal-cache.tar.gz" -C "$LOCAL_BIN"
         ls -al "$LOCAL_BIN/cabal-cache"
-        echo "::add-path::$LOCAL_BIN"
+        echo "$LOCAL_BIN" >> $GITHUB_PATH
       shell: bash
     - run: |
         echo cabal-cache ${{ inputs.args }}
